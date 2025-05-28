@@ -33,6 +33,7 @@ def main():
     if args.verbose:
         logging.getLogger("refs.client").setLevel(logging.DEBUG)
         logging.getLogger("refs.find").setLevel(logging.DEBUG)
+        logging.getLogger("refs.refs").setLevel(logging.DEBUG)
 
     remarkable_address = args.remarkable_address
     mount_dir = args.mount_dir

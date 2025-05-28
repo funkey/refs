@@ -75,6 +75,9 @@ class ReFs(llfuse.Operations):
     def lookup(self, parent_inode, name, ctx=None):
         """Given parent inode and file name, return attributes."""
         name = os.fsdecode(name)
+        logger.debug(
+            "[ReFs::lookup] looking up %s in parent inode %s...", name, parent_inode
+        )
         entry = self.__get_entry(parent_inode, name)
         return self.__get_attr(entry)
 
@@ -271,11 +274,13 @@ class ReFs(llfuse.Operations):
 
         if name is None:
             return entry
-        name = self.__get_entry_name(name)
+        entry_name = self.__get_entry_name(name)
+        if entry_name is None:
+            raise llfuse.FUSEError(errno.ENOENT)
 
         # inode is parent dir
         for child in entry.children.values():
-            if child.name == name:
+            if child.name == entry_name:
                 return child
 
         # no entry with that name in parent
@@ -283,6 +288,9 @@ class ReFs(llfuse.Operations):
 
     def __get_entry_name(self, filename):
         """Get the name of an entry from its filename."""
+        path = Path(filename)
+        if path.suffix not in [".pdf", ""]:
+            return None
         # strip file extension
         return Path(filename).with_suffix("").name
 

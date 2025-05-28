@@ -51,7 +51,8 @@ def main():
 
     fuse_options = set(llfuse.default_options)
     fuse_options.add("fsname=ReFs")
-    # fuse_options.discard("default_permissions")
+    fuse_options.add("volname=reMarkable")
+    fuse_options.add("local")
     if platform.system() == "Darwin":
         fuse_options.add("noappledouble")
     llfuse.init(fs, mount_dir, fuse_options)

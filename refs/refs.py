@@ -171,6 +171,19 @@ class ReFs(llfuse.Operations):
         self.__fs_changed = True
         return file.write(data, offset)
 
+    def flush(self, inode):
+        entry = self.__get_entry(inode)
+
+        if not isinstance(entry, Pdf):
+            logger.error("[ReFs::flush] called on non-Pdf %s", entry)
+            return
+
+        file = self.files[entry]
+        if file.modified:
+            # store new/modified PDF on reMarkable
+            self.client.put_pdf(file.data, document=entry)
+            file.modified = False
+
     def rename(self, parent_inode_old, name_old, parent_inode_new, name_new, context):
         name_old = os.fsdecode(name_old)
         name_new = os.fsdecode(name_new)

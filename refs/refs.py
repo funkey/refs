@@ -98,6 +98,9 @@ class ReFs(llfuse.Operations):
         file.update_attrs(fields, attr)
         return file.attrs
 
+    def getxattr(self, inode, name, context):
+        raise llfuse.FUSEError(errno.ENOATTR)
+
     def setxattr(self, inode, name, value, ctx):
         # We need to keep this one around to please (at least) MacOS. It seems
         # okay to do nothing here.

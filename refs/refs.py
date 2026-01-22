@@ -2,6 +2,7 @@ import errno
 import logging
 import os
 import stat
+import time
 from pathlib import Path
 
 import llfuse
@@ -49,7 +50,11 @@ class ReFs(llfuse.Operations):
             for child in entry.children.values():
                 self.__init_maps(child)
         else:
-            self.files[entry] = MemFile(attrs=self.__default_file_attrs(inode))
+            attrs = self.__default_file_attrs(inode)
+            mtime_ns = int(entry.mtime_ms) * 1_000_000
+            attrs.st_atime_ns = mtime_ns
+            attrs.st_mtime_ns = mtime_ns
+            self.files[entry] = MemFile(attrs=attrs)
 
     def statfs(self, context=None):
         stat = llfuse.StatvfsData()

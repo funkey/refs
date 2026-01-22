@@ -1,4 +1,6 @@
-from collections import defaultdict
+import logging
+import time
+
 from .constants import (
     DOCUMENT_TYPE,
     FOLDER_BASE_CONTENT,
@@ -10,8 +12,6 @@ from .constants import (
     TRASH_ID,
 )
 from .utils import from_json, to_json
-import arrow
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +92,11 @@ class Entry:
         self.__write()
 
     @property
+    def mtime_ms(self):
+        """The time the entry was last modified in ms."""
+        return float(self.metadata["lastModified"])
+
+    @property
     def deleted(self):
         return self.metadata.get("deleted", False) or self.parent_uid == TRASH_ID
 
@@ -106,14 +111,14 @@ class Entry:
 
     def __modified(self):
         self.metadata["metadatamodified"] = True
-        self.metadata["lastModified"] = self._current_timestamp()
+        self.metadata["lastModified"] = self._current_timestamp_ms()
         self.modified = True
 
     def __lt__(self, other):
         return self.uid < other.uid
 
-    def _current_timestamp(self):
-        return str(int(arrow.utcnow().timestamp() * 1000))
+    def _current_timestamp_ms(self):
+        return str(int(time.time_ns() / 1_000_000))
 
 
 class Folder(Entry):
@@ -225,7 +230,7 @@ class Pdf(Document):
     def __init__(self, fs, uid, metadata=None, content=None, modified=False):
         if metadata is None:
             metadata = PDF_BASE_METADATA.copy()
-            metadata["createdTime"] = self._current_timestamp()
+            metadata["createdTime"] = self._current_timestamp_ms()
             modified = True
         if content is None:
             content = PDF_BASE_CONTENT.copy()

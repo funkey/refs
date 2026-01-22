@@ -106,11 +106,14 @@ class Entry:
 
     def __modified(self):
         self.metadata["metadatamodified"] = True
-        self.metadata["lastModified"] = str(arrow.utcnow().timestamp() * 1000)
+        self.metadata["lastModified"] = self._current_timestamp()
         self.modified = True
 
     def __lt__(self, other):
         return self.uid < other.uid
+
+    def _current_timestamp(self):
+        return str(int(arrow.utcnow().timestamp() * 1000))
 
 
 class Folder(Entry):
@@ -222,6 +225,7 @@ class Pdf(Document):
     def __init__(self, fs, uid, metadata=None, content=None, modified=False):
         if metadata is None:
             metadata = PDF_BASE_METADATA.copy()
+            metadata["createdTime"] = self._current_timestamp()
             modified = True
         if content is None:
             content = PDF_BASE_CONTENT.copy()
